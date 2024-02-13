@@ -1,3 +1,7 @@
+# About 
+We are developing a pathfinding visualizer that is based on this project here: 
+https://github.com/0kzh/pathfinding-visualizer?tab=readme-ov-file
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
