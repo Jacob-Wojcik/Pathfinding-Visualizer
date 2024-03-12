@@ -1,35 +1,12 @@
 # About 
-We are developing a pathfinding visualizer, based on the project above:
+We are developing a pathfinding visualizer that is based on this project here: 
 https://github.com/0kzh/pathfinding-visualizer?tab=readme-ov-file
 
-This application will allow analysis and observation of pathfinding using several different algorithms.
+This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
-### What you need
-You will need to download Node.js and npm. Node.js is an open-source cross-platform, Javascript runtime enviroment. npm is the default package manager for Javascript's runtime Node.js
 
-Learn more about Node.js and npm here:
-- https://nodejs.org/en - official Node.js Docs
-- https://www.freecodecamp.org/news/what-is-npm-a-node-package-manager-tutorial-for-beginners/ 
-- https://docs.npmjs.com/downloading-and-installing-node-js-and-npm - installation guide
-
-
-Once you have successfully downloaded Node.js and npm
-
-### Clone the repository
-Clone the remote repository in a folder on your local machine using: 
-```bash 
-git clone https://github.com/rKamindo/pathfinding-visualizer
-```
-Navigate to the folder where the repository was cloned.
-
-### Running locally
-First install all the dependencies of the project:
-```bash
-npm install
-```
-
-Next, run the development server:
+First, run the development server:
 
 ```bash
 npm run dev
@@ -41,14 +18,16 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the application running on your local machine
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## Technologies
-Next.js, React, Typescript
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
+This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
 
 ## Learn More
-- [React Documentation](https://react.dev/) - learn about React
-- [Learn React](https://nextjs.org/learn/react-foundations/what-is-react-and-nextjs) - learn the foundations of React
+
+To learn more about Next.js, take a look at the following resources:
+
 - [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
 - [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
