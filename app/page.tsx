@@ -1,6 +1,5 @@
 "use client";
-import dynamic from "next/dynamic";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   Child,
@@ -14,13 +13,11 @@ import { MoonIcon, SunIcon } from "@primer/octicons-react";
 import { qtNode, dataDict } from "./types";
 import * as d3 from "d3-quadtree";
 import { LatLng, LeafletMouseEvent } from "leaflet";
-import { Marker, Popup } from "react-leaflet";
+import { MapContainer, Marker, Popup, TileLayer, ZoomControl, useMapEvents } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 import { markerA, markerB } from "./Icons";
 
 export default function Home() {
-  const Map = dynamic(() => import("./components/Map"), {
-    ssr: false,
-  });
 
   const [lat, setLat] = useState<number>(42.279);
   const [long, setLong] = useState<number>(-83.732);
@@ -114,27 +111,12 @@ export default function Home() {
     }
   };
 
-  const MemoizedMap = useMemo(() => {
-    return (
-      <Map
-        center={[lat, long]}
-        zoom={zoom}
-        layerTiles={layerTiles}
-        handleClick={handleClick}
-      >
-        {startMarkerPos && (
-          <Marker icon={markerA} position={startMarkerPos}>
-            <Popup>Start</Popup>
-          </Marker>
-        )}
-        {endMarkerPos && (
-          <Marker icon={markerB} position={endMarkerPos}>
-            <Popup>End</Popup>
-          </Marker>
-        )}
-      </Map>
-    );
-  }, [lat, long, zoom, layerTiles, startNode, endNode]);
+  function MapEventHandler() {
+    const map = useMapEvents({
+      click: (e) => handleClick(e)
+    });
+    return null;
+  }
 
   return (
     <div>
@@ -176,7 +158,29 @@ export default function Home() {
           </IconWrapper>
         </Child>
       </Settings>
-      {MemoizedMap}
+      <MapContainer
+          className="w-full h-lvh"
+          center={[lat, long]}
+          zoom={zoom}
+          zoomControl={false}
+        >
+          <MapEventHandler />
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url={layerTiles}
+          />
+            {startMarkerPos && (
+            <Marker icon={markerA} position={startMarkerPos}>
+              <Popup>Start</Popup>
+            </Marker>
+            )}
+            {endMarkerPos && (
+              <Marker icon={markerB}position={endMarkerPos}>
+                <Popup>End</Popup>
+              </Marker>
+            )}
+          <ZoomControl position={"bottomleft"} />
+        </MapContainer>
     </div>
   );
 }
