@@ -138,7 +138,7 @@ export default function Home() {
         if (closest) {
           setNode(closest.key);
           setMarkerPos(new LatLng(closest.lat, closest.lon));
-          console.log("node set to", closest);
+          console.log("marker set to", closest);
         }
       }
     };
