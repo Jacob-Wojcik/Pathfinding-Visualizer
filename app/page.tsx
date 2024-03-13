@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { RefObject, useEffect, useRef, useState } from "react";
 import {
   Button,
   Child,
@@ -12,13 +12,23 @@ import { getCityData } from "./constants";
 import { MoonIcon, SunIcon } from "@primer/octicons-react";
 import { qtNode, dataDict } from "./types";
 import * as d3 from "d3-quadtree";
-import { LatLng, LeafletMouseEvent } from "leaflet";
-import { MapContainer, Marker, Popup, TileLayer, ZoomControl, useMapEvents } from "react-leaflet";
+import {
+  LatLng,
+  LeafletMouseEvent,
+  Marker as LeafletMarker,
+} from "leaflet";
+import {
+  MapContainer,
+  Marker,
+  Popup,
+  TileLayer,
+  ZoomControl,
+  useMapEvents,
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { markerA, markerB } from "./Icons";
 
 export default function Home() {
-
   const [lat, setLat] = useState<number>(42.279);
   const [long, setLong] = useState<number>(-83.732);
   const [zoom, setZoom] = useState<number>(12);
@@ -36,6 +46,9 @@ export default function Home() {
 
   const [startMarkerPos, setStartMarkerPos] = useState<LatLng | null>(null);
   const [endMarkerPos, setEndMarkerPos] = useState<LatLng | null>(null);
+  // defines refs for the Maker components, gives a reference to the marker components useful when dragging
+  const startNodeMarker = useRef<LeafletMarker>(null);
+  const endNodeMarker = useRef<LeafletMarker>(null);
 
   const [qt, setQt] = useState<d3.Quadtree<qtNode>>(d3.quadtree<qtNode>());
   const [nodeData, setNodeData] = useState<dataDict>({});
@@ -91,12 +104,13 @@ export default function Home() {
       const lat = latlng.lat;
       const lon = latlng.lng;
       const closestNode = qt.find(lat, lon);
-      console.log("node nearest click is", closestNode);
+      console.log("nearest node:", closestNode);
       return closestNode;
     }
   };
 
   const handleClick = (e: LeafletMouseEvent) => {
+    // either we have not set a start or end node, find the closest node near the click
     if (!startNode || !endNode) {
       const closestNode = findClosestNode(e.latlng);
       if (closestNode) {
@@ -111,9 +125,39 @@ export default function Home() {
     }
   };
 
+  const handleMarkerDragEnd =
+    (
+      markerRef: RefObject<LeafletMarker>,
+      setNode: (nodeId: string) => void,
+      setMarkerPos: (latlng: LatLng) => void
+    ) =>
+    () => {
+      const marker = markerRef.current;
+      if (marker != null) {
+        const closest = findClosestNode(marker.getLatLng());
+        if (closest) {
+          setNode(closest.key);
+          setMarkerPos(new LatLng(closest.lat, closest.lon));
+          console.log("node set to", closest);
+        }
+      }
+    };
+
+  const onStartMarkerDragEnd = handleMarkerDragEnd(
+    startNodeMarker,
+    setStartNode,
+    setStartMarkerPos
+  );
+
+  const onEndMarkerDragEnd = handleMarkerDragEnd(
+    endNodeMarker,
+    setEndNode,
+    setEndMarkerPos
+  );
+
   function MapEventHandler() {
     const map = useMapEvents({
-      click: (e) => handleClick(e)
+      click: (e) => handleClick(e),
     });
     return null;
   }
@@ -159,28 +203,44 @@ export default function Home() {
         </Child>
       </Settings>
       <MapContainer
-          className="w-full h-lvh"
-          center={[lat, long]}
-          zoom={zoom}
-          zoomControl={false}
-        >
-          <MapEventHandler />
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url={layerTiles}
-          />
-            {startMarkerPos && (
-            <Marker icon={markerA} position={startMarkerPos}>
-              <Popup>Start</Popup>
-            </Marker>
-            )}
-            {endMarkerPos && (
-              <Marker icon={markerB}position={endMarkerPos}>
-                <Popup>End</Popup>
-              </Marker>
-            )}
-          <ZoomControl position={"bottomleft"} />
-        </MapContainer>
+        className="w-full h-lvh"
+        center={[lat, long]}
+        zoom={zoom}
+        zoomControl={false}
+      >
+        <MapEventHandler />
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url={layerTiles}
+        />
+        {startMarkerPos && (
+          <Marker
+            icon={markerA}
+            position={startMarkerPos}
+            ref={startNodeMarker}
+            draggable
+            eventHandlers={{
+              dragend: onStartMarkerDragEnd,
+            }}
+          >
+            <Popup>Start</Popup>
+          </Marker>
+        )}
+        {endMarkerPos && (
+          <Marker
+            icon={markerB}
+            position={endMarkerPos}
+            ref={endNodeMarker}
+            draggable
+            eventHandlers={{
+              dragend: onEndMarkerDragEnd,
+            }}
+          >
+            <Popup>End</Popup>
+          </Marker>
+        )}
+        <ZoomControl position={"bottomleft"} />
+      </MapContainer>
     </div>
   );
 }
