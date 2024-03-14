@@ -8,3 +8,21 @@ export interface nodeInfo {
   lon: number;
   adj: Array<string>;
 }
+
+export interface qtNode {
+  key: string;
+  lat: number;
+  lon: number;
+}
+
+export interface dataDict {
+  [key: string]: nodeInfo;
+}
+
+export interface cityDict {
+  [key: string]: {
+    data: dataDict;
+    file: string;
+    loaded: boolean;
+  };
+}
