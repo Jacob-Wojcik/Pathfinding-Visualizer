@@ -79,4 +79,19 @@ function findPath(current: string, visited: Map<string, string>){
 	}
 }
 
-const example: Map<string, nodeInfo> = new Map();
+
+export  function test (){
+
+	const example: Map<string, nodeInfo> = new Map();
+	example.set("1", {lon: 1 , lat: 1, adj: ["2", "4"] });
+	example.set("2", {lon: 2 , lat: 2, adj: ["3", "4", "5"] });
+	example.set("3", {lon: 3 , lat: 3, adj: ["1", "2"] });
+	example.set("4", {lon: 4 , lat: 4, adj: ["7","8"] });
+	example.set("5", {lon: 5 , lat: 5, adj: ["4"] });
+	example.set("6", {lon: 6 , lat: 6, adj: ["3", "4"] });
+	example.set("7", {lon: 7 , lat: 7, adj: ["end"] });
+	example.set("8", {lon: 8 , lat: 8, adj: ["2", "6"] });
+	example.set("end", {lon: 9 , lat: 9, adj: ["1", "4", "5"] });
+
+	console.log(BFS("1", "end", example));
+}
