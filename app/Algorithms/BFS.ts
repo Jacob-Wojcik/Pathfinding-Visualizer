@@ -6,7 +6,7 @@ Takes a starting point on the map, and finds a path to the end location
 by using a breadth-first search. Also requires a Map (aka Hash table) with
 all of the nodes on the map provided
 */
-function BFS(string: start, string: end, Map: nodes){
+function BFS(){
 	
 	//Hash table to store which vertices have been visited. Keys are the previous node in the path
 	const visited = new Map();

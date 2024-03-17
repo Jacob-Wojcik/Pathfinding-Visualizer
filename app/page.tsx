@@ -162,6 +162,24 @@ export default function Home() {
     return null;
   }
 
+  const runPathfinding = async () => {
+    // only run pathfinding if start and end is marked
+    if (startNode && endNode) {
+      try {
+        // Dynamically import the selected algorithm module
+        const pathfindingModule = await import(`./algorithms/${algorithm}`);
+        const pathfindingFunction = pathfindingModule.default;
+  
+        // Call the pathfinding function with the provided parameters
+        console.log('calling pathfinding function with parameters:', city, startNode, endNode);
+        const path = await pathfindingFunction(city, startNode, endNode);
+        console.log('Path found:', path);
+      } catch (error) {
+        console.error('Error occurred during pathfinding:', error);
+      }
+    }
+  }
+
   return (
     <div>
       <Settings>
@@ -190,7 +208,7 @@ export default function Home() {
               </option>
             ))}
           </Select>
-          <Button className="rounded-r-sm">Visualize</Button>
+          <Button onClick={runPathfinding} className="rounded-r-sm">Visualize</Button>
         </Child>
         <Child className="justify-end">
           <IconWrapper onClick={() => setDarkMode(!darkMode)}>
