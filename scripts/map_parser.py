@@ -14,6 +14,24 @@ import json
     Returns:
         dict: Adjacency list representing the graph extracted from the OSM file.
     """
+# Dictionary mapping highway types to their default maximum speeds in miles per hour 
+default_speeds = {
+    "motorway": 70,
+    "trunk": 60,
+    "primary": 60,
+    "secondary": 45,
+    "tertiary": 35,
+    "unclassified": 55,
+    "residential": 25,
+    "living_street": 25,
+    "service": 25,
+    "motorway_link": 45,
+    "trunk_link": 35,
+    "primary_link": 30,
+    "secondary_link": 30,  
+    "tertiary_link": 35,   
+}
+
 def read_osm(osm_file):
     print('Processing OSM file data...')
     adjacency_list = {}
@@ -37,7 +55,10 @@ def read_osm(osm_file):
             """
             if 'highway' in w.tags:
                 highway_type = w.tags['highway']
-                if highway_type in ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'unclassified', 'residential', 'motorway_link', 'trunk_link', 'primary_link', 'secondary_link', 'tertiary_link']:
+                if highway_type in ['motorway', 'trunk', 'primary', 'secondary', 
+                                    'tertiary', 'unclassified', 'residential', 
+                                    'motorway_link', 'trunk_link', 'primary_link', 
+                                    'secondary_link', 'tertiary_link', 'living_street', 'service']:
                     nodes = w.nodes
                     for i in range(len(nodes) - 1):
                         node1_id = str(nodes[i].ref)
@@ -47,15 +68,19 @@ def read_osm(osm_file):
                         lat2, lon2 = adjacency_list[node2_id]['lat'], adjacency_list[node2_id]['lon']
 
                         distance = haversine((lat1, lon1), (lat2, lon2), unit=Unit.MILES)
-                        max_speed = self.get_max_speed(w)
+                        max_speed = self.get_max_speed(w, highway_type)
+                        time = distance / max_speed # time in hours
                         if node1_id not in adjacency_list[node2_id]['adj']:
-                            adjacency_list[node2_id]['adj'].append({'nodeId': node1_id, 'distance': distance, 'maxSpeed': max_speed})
+                            adjacency_list[node2_id]['adj'].append({'nodeId': node1_id, 'distance': distance, 'time': time})
                         if node2_id not in adjacency_list[node1_id]['adj']:
-                            adjacency_list[node1_id]['adj'].append({'nodeId': node2_id, 'distance': distance, 'maxSpeed': max_speed})
+                            adjacency_list[node1_id]['adj'].append({'nodeId': node2_id, 'distance': distance, 'time': time})
 
-        def get_max_speed(self, w):
+        def get_max_speed(self, w, highway_type):
             """
             Helper function to get the maximum speed from OSM way tags.
+            If the way tags doesn't contain max speed information, we
+            will use the default speeds of the highway type that is 
+            defined in a dictionary.
 
             Args:
                 way (osmium.osm.Way): OSM way object.
@@ -66,12 +91,14 @@ def read_osm(osm_file):
             max_speed = w.tags.get('maxspeed', None)
             if max_speed:
                 if max_speed.isdigit():
-                    return int(max_speed)
+                    # Convert km/h to mph
+                    return int(max_speed) / 1.60934
                 elif max_speed.endswith(' mph'):
-                    return int(max_speed.split(' ')[0]) * 1.60934  # Convert mph to km/h
+                    return int(max_speed.split(' ')[0]) 
                 elif max_speed.endswith(' km/h'):
-                    return int(max_speed.split(' ')[0])
-            return None
+                    return int(max_speed.split(' ')[0] / 1.60934)
+            else:
+                return int(default_speeds[highway_type])
 
     handler = NodeHandler()
     handler.apply_file(osm_file)

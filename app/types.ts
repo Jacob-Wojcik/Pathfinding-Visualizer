@@ -6,7 +6,7 @@ export interface pair {
 export interface adjacencyInfo {
   nodeId: string;
   distance: number;
-  maxSpeed: number | null;
+  time: number;
 }
 
 export interface nodeInfo {
