@@ -1,6 +1,8 @@
 import sys
+import os
 from collections import deque
 import osmium
+from haversine import haversine, Unit
 import json
 
 """
@@ -16,6 +18,7 @@ def read_osm(osm_file):
     print('Processing OSM file data...')
     adjacency_list = {}
     class NodeHandler(osmium.SimpleHandler):
+        
         def node(self, n):
             """
             Callback function to handle OSM nodes.
@@ -37,18 +40,41 @@ def read_osm(osm_file):
                 if highway_type in ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'unclassified', 'residential', 'motorway_link', 'trunk_link', 'primary_link', 'secondary_link', 'tertiary_link']:
                     nodes = w.nodes
                     for i in range(len(nodes) - 1):
-                        node1 = str(nodes[i].ref)
-                        node2 = str(nodes[i + 1].ref)
-                        if node1 not in adjacency_list[node2]['adj']:
-                            adjacency_list[node2]['adj'].append(node1)
-                        if node2 not in adjacency_list[node1]['adj']:
-                            adjacency_list[node1]['adj'].append(node2)
+                        node1_id = str(nodes[i].ref)
+                        node2_id = str(nodes[i + 1].ref)
+                        # Get the latitude and longitude of the current and next nodes
+                        lat1, lon1 = adjacency_list[node1_id]['lat'], adjacency_list[node1_id]['lon']
+                        lat2, lon2 = adjacency_list[node2_id]['lat'], adjacency_list[node2_id]['lon']
 
-    try:
-        handler = NodeHandler()
-        handler.apply_file(osm_file)
-    except Exception as e:
-        print("Error:", e)
+                        distance = haversine((lat1, lon1), (lat2, lon2), unit=Unit.MILES)
+                        max_speed = self.get_max_speed(w)
+                        if node1_id not in adjacency_list[node2_id]['adj']:
+                            adjacency_list[node2_id]['adj'].append({'nodeId': node1_id, 'distance': distance, 'maxSpeed': max_speed})
+                        if node2_id not in adjacency_list[node1_id]['adj']:
+                            adjacency_list[node1_id]['adj'].append({'nodeId': node2_id, 'distance': distance, 'maxSpeed': max_speed})
+
+        def get_max_speed(self, w):
+            """
+            Helper function to get the maximum speed from OSM way tags.
+
+            Args:
+                way (osmium.osm.Way): OSM way object.
+
+            Returns:
+                int: Maximum speed in mph
+            """
+            max_speed = w.tags.get('maxspeed', None)
+            if max_speed:
+                if max_speed.isdigit():
+                    return int(max_speed)
+                elif max_speed.endswith(' mph'):
+                    return int(max_speed.split(' ')[0]) * 1.60934  # Convert mph to km/h
+                elif max_speed.endswith(' km/h'):
+                    return int(max_speed.split(' ')[0])
+            return None
+
+    handler = NodeHandler()
+    handler.apply_file(osm_file)
     return adjacency_list
 
 def extract_largest_connected_graph(graph: dict):
@@ -79,8 +105,9 @@ def extract_largest_connected_graph(graph: dict):
             visited.add(current_node)
             component.add(current_node)  # Add current node to the current component
             for neighbor in graph[current_node]['adj']:
-                if neighbor not in visited:
-                    queue.append(neighbor)
+                neighbor_id = neighbor['nodeId']
+                if neighbor_id not in visited:
+                    queue.append(neighbor_id)
         return component
 
     for node in graph:
@@ -90,7 +117,7 @@ def extract_largest_connected_graph(graph: dict):
                 largest_component = component  # Update largest component if current component is larger
     
     largest_component_graph = {n: graph[n] for n in largest_component}  # Build largest subgraph            
-
+    
     print("Size of the largest component:", len(largest_component_graph), 'nodes')
     return largest_component_graph
 
@@ -107,4 +134,7 @@ if __name__ == '__main__':
     with open(f'../public/data/{output_file}', 'w') as outfile:
         json.dump(largest_component, outfile)
         print(f'Generating {output_file}')
+        file_size = os.path.getsize(f'../public/data/{output_file}')
+        file_size_mb = file_size / (1024 * 1024)
+        print(f'Size of the generated JSON file: {file_size_mb:.2f} MB')
     print(f'Processing complete.')
