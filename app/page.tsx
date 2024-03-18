@@ -69,7 +69,7 @@ export default function Home() {
     setStartMarkerPos(null);
     setEndMarkerPos(null);
 
-    getCityData(city, setLoading, setProgress).then((data) => {
+    getCityData(city, () => {}, () => {}).then((data) => {
       setNodeData(data);
     });
   }, [city]);
@@ -162,15 +162,22 @@ export default function Home() {
     return null;
   }
 
+  /* 
+  this is function handles executing the pathfinding
+  it dynamically imports the pathfindingModule, accesses the default function
+  and calls the pathfinding function with the city, startNode, endnode as parameters
+  finally it will log the path for now, later we will work on animating the path found
+  */
   const runPathfinding = async () => {
     // only run pathfinding if start and end is marked
     if (startNode && endNode) {
       try {
-        // Dynamically import the selected algorithm module
+        // dynamically import the selected algorithm module
+        console.log(`importing pathfinding module from ./algorithms/${algorithm}`)
         const pathfindingModule = await import(`./algorithms/${algorithm}`);
         const pathfindingFunction = pathfindingModule.default;
-  
-        // Call the pathfinding function with the provided parameters
+        
+        // call the pathfinding function with the provided parameters
         console.log('calling pathfinding function with parameters:', city, startNode, endNode);
         const path = await pathfindingFunction(city, startNode, endNode);
         console.log('Path found:', path);
