@@ -43,15 +43,15 @@ async function BFS(city: string, start: string, end: string) {
 		for (let i: number = 0; i < currentNode.adj.length; i++) {
 
 			//If the adjacent nodes to the queued element have not been visited yet
-			if (!nodesSeen.has(currentNode.adj[i])) {
+			if (!nodesSeen.has(currentNode.adj[i].nodeId)) {
 
 				//marks current adjacent node with where it came from (use vertex names for hash table)
 				//Key is the adj node's identity, the value of it is the current node's identity
 				//i.e. if 1 goes to 2 and 2 to 3, the hash table would look like {[2,1], [3,2]} at end of program
-				nodesSeen.set(currentNode.adj[i], queue[0]);
+				nodesSeen.set(currentNode.adj[i].nodeId, queue[0]);
 
 				//Adds adjacent node to queue
-				queue.push(currentNode.adj[i]);
+				queue.push(currentNode.adj[i].nodeId);
 			}
 		}
 
@@ -95,7 +95,7 @@ function findPath(current: string | undefined, visited: Map<string,string>): Arr
 	}
 }
 
-
+/*
 export  function test (){
 
 	const example: Map<string, nodeInfo> = new Map();
@@ -110,4 +110,4 @@ export  function test (){
 	example.set("end", {lon: 9 , lat: 9, adj: ["1", "4", "5"] });
 
 	console.log(BFS("annarbor","1", "end"));
-}
+}*/
