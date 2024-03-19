@@ -3,10 +3,16 @@ export interface pair {
   value: string;
 }
 
+export interface adjacencyInfo {
+  nodeId: string;
+  distance: number;
+  time: number;
+}
+
 export interface nodeInfo {
   lat: number;
   lon: number;
-  adj: Array<string>;
+  adj: Array<adjacencyInfo>;
 }
 
 export interface qtNode {
