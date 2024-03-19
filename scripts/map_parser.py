@@ -39,6 +39,7 @@ def read_osm(osm_file):
                     for i in range(len(nodes) - 1):
                         node1 = str(nodes[i].ref)
                         node2 = str(nodes[i + 1].ref)
+
                         if node1 not in adjacency_list[node2]['adj']:
                             adjacency_list[node2]['adj'].append(node1)
                         if node2 not in adjacency_list[node1]['adj']:
