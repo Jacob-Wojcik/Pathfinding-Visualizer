@@ -10,7 +10,9 @@ import { nodeInfo } from "../types.ts";
 import { getCityData } from "../constants.ts";
 import { dataDict } from "../types.ts";
 
-async function BFS(city: string, start: string, end: string) {
+
+
+export default async function bfs(city: string, start: string, end: string) {
 
 	const nodes = await getCityData(city,() => {}, () => {});
 
