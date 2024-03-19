@@ -43,19 +43,40 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the application running on your local machine
 
+## How to generate the data
+To generate the data for pathfinding, follow these steps:
+
+1. **Download OSM Data**: Visit [BBBike](https://extract.bbbike.org/) and select your desired region or area of interest. Choose the format "OSM PBF raw data" and download the file for the location you wish.
+
+## Running the script that creates an adjacency list out of the data
+To run the pathfinding script, follow these steps:
+
+1. Ensure you have Python installed on your system. If not, you can download and install it from the [official Python website](https://www.python.org/downloads/).
+
+2. Clone or download the repository containing the script to your local machine.
+
+3. Navigate to the directory containing the map_parser.py script
+    ```bash
+    cd scripts
+    ```
+
+4. **Run the following command** in your terminal to install the required dependencies listed in the `requirements.txt` file:
+
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+5. **Run the script**: Execute the map parser script with the OSM PBF file as input.
+    (For convenience, I )
+    ```bash
+   python map_parser.py <osm_file>
 ## Technologies
 Next.js, React, Typescript
 
 ## Learn More
+- [Leaflet](https://leafletjs.com/reference.html) - learn about Leaflet
+- [React Leaftlet](https://react-leaflet.js.org/) - learn more about React Leaflet
 - [React Documentation](https://react.dev/) - learn about React
 - [Learn React](https://nextjs.org/learn/react-foundations/what-is-react-and-nextjs) - learn the foundations of React
 - [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
 - [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
