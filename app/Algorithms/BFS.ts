@@ -7,29 +7,35 @@ by using a breadth-first search. Also requires a Map (aka Hash table) with
 all of the nodes on the map provided
 */
 import { nodeInfo } from "../types.ts";
+import { getCityData } from "../constants.ts";
+import { dataDict } from "../types.ts";
 
+async function BFS(city: string, start: string, end: string) {
 
-
-function BFS(start: string, end: string, nodes: Map<string, nodeInfo>) {
+	const nodes = await getCityData(city,() => {}, () => {});
 
 	//Hash table to store which vertices have been visited. Keys are the previous node in the path
-	const visited: Map<string,string> = new Map<string, string>();
+	const nodesSeen: Map<string,string> = new Map<string, string>();
 
 	const queue: string[] = [start];
 
-	visited.set(start, "start");
+	nodesSeen.set(start, "start");
 
 
 	//Loop until end is found
 	while (queue.length > 0) {
 
-		const current: string = queue[0];
-		const currentNode: nodeInfo = nodes.get(current);
+		const currentNodeName: string = queue[0];
+		const currentNode = nodes[currentNodeName];
 
 		//Found the end!
-		if (current === (end)) {
+		if (currentNodeName === (end)) {
 
-			return findPath(end, visited);
+			//return findPath(end, nodesSeen);
+
+
+
+
 		}
 
 
@@ -37,12 +43,12 @@ function BFS(start: string, end: string, nodes: Map<string, nodeInfo>) {
 		for (let i: number = 0; i < currentNode.adj.length; i++) {
 
 			//If the adjacent nodes to the queued element have not been visited yet
-			if (!visited.has(currentNode.adj[i])) {
+			if (!nodesSeen.has(currentNode.adj[i])) {
 
 				//marks current adjacent node with where it came from (use vertex names for hash table)
 				//Key is the adj node's identity, the value of it is the current node's identity
 				//i.e. if 1 goes to 2 and 2 to 3, the hash table would look like {[2,1], [3,2]} at end of program
-				visited.set(currentNode.adj[i], queue[0]);
+				nodesSeen.set(currentNode.adj[i], queue[0]);
 
 				//Adds adjacent node to queue
 				queue.push(currentNode.adj[i]);
@@ -61,21 +67,31 @@ function BFS(start: string, end: string, nodes: Map<string, nodeInfo>) {
 
 
 //Recursively finds the path and returns a path list
-function findPath(current: string, visited: Map<string, string>){
+function findPath(current: string | undefined, visited: Map<string,string>): Array<string>{
 
+	
+
+	//const nodes = await getCityData(city,() => {}, () => {});
 	//If this element has a node that the path came through before this
-	if (visited.get(current) === ("start")) {
+	if (current != ("start")) {
+
+		if(!current)
+			current = "";
+
 
 		//Recursive call to find beginning of the path,
 		//returns a list with ordering of path
-		return findPath(visited.get(current), visited).push(current); // needs to add current element to recursive call list
+		const previousList: Array<string> = findPath(visited.get(current), visited);
+		
+		previousList.unshift(current); // needs to add current element to recursive call list
 
+		return previousList;
 	}
 
 	//Base case: hash table does not have parent element, i.e. the start
 	else {
 		//Returns a list with the starting location at index 0
-		return [current];
+		return new Array<string>(current);
 	}
 }
 
@@ -93,5 +109,5 @@ export  function test (){
 	example.set("8", {lon: 8 , lat: 8, adj: ["2", "6"] });
 	example.set("end", {lon: 9 , lat: 9, adj: ["1", "4", "5"] });
 
-	console.log(BFS("1", "end", example));
+	console.log(BFS("annarbor","1", "end"));
 }
