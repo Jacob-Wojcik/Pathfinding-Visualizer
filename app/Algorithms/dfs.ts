@@ -36,11 +36,12 @@ const dfs = async (city: string, start: string, end: string) => {
     visitedNodes.add(node);
     if (node in nodeData) {
       let nodeInformation = nodeData[node];
-      let neighbors: Array<string> = nodeInformation.adj;
+      const neighbors = nodeInformation.adj;
       neighbors.forEach((neighbor) => {
-        if(!visitedNodes.has(neighbor)) {
-          previous[neighbor] = node;
-          stack.push(neighbor);
+        const neighborId = neighbor.nodeId; // access nodeId from the adjacent node
+        if (!visitedNodes.has(neighborId)) {
+          previous[neighborId] = node;
+          stack.push(neighborId);
         }
       });
     }
