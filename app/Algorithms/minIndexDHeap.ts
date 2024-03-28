@@ -37,7 +37,10 @@ class MinIndexedDHeap<T> {
   private d: number // the degree of every node in the heap
   private sz: number // size of heap
 
-  private values: Array<T | null> // maps key indices -> values
+  // MAKE PRIVATE AGAIN, PUBLIC FOR TESTING
+  public  values: Array<T | null> // maps key indices -> values
+
+
   public heap: number[] // maps positions in heap -> key indices
   public pm: number[] // maps key indices -> positions in heap
 
@@ -53,6 +56,7 @@ class MinIndexedDHeap<T> {
 
     this.compare = compareFunction || utils.defaultCompare
   }
+
 
   /*****************************************************************************
                                   NICETIES
@@ -93,6 +97,10 @@ class MinIndexedDHeap<T> {
     this.pm[key] = keyPosition // update position map
 
     this.swim(keyPosition) // O(log_d(n))
+
+    //////////////////////// debug ////////////////////////
+    ///// print out the node that was just added to the IPQ ////
+    console.log('Value added to priority queue:', value); // Debug statement to log the added value
 
     return true
   }

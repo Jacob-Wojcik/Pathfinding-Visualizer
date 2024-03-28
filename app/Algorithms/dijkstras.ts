@@ -1,5 +1,5 @@
 import MinIndexedDHeap from "./minIndexDHeap.ts";
-import {pair , nodeInfo } from '../types.ts';
+import {pair , nodeInfo, dataDict } from '../types.ts';
 import { getCityData } from "../constants";
 
 /**
@@ -12,10 +12,10 @@ import { getCityData } from "../constants";
 
  class Dijkstras 
  {
-    private graph: { [label: string]: nodeInfo};
+    private graph: dataDict;
     private priorityQueue: MinIndexedDHeap<string>;
 
-    constructor(graph: {[label: string]: nodeInfo}) {
+    constructor(graph: dataDict) {
         this.graph = graph;
         this.priorityQueue = new MinIndexedDHeap<string>(2);
           }
@@ -23,12 +23,27 @@ import { getCityData } from "../constants";
     
     dijkstras(startNodeID: string, endNodeID: string): string[] | null 
     {
+       // Check if start and end nodes are provided
+    if (!startNodeID || !endNodeID) {
+      console.log("Error: Start and/or end nodes are missing.");
+      return null;
+  }
+        console.log("Start node and end node not null"); 
+        console.log("Start Node:", startNodeID);
+        console.log("End Node:", endNodeID);
+    
         // initialization: arrays are mutable in TypeScript
         const distances: {[nodeId: string]: number} = {}; // dist array to store the current best known distances from start node to each node
         const previousPath: {[nodeId: string]: string | null} = {}; // array that holds the nodes of the shortest distance path
 
         for(const nodeInGraph in this.graph) // 'for...in loop' that iterates over all nodes in the graph
         {
+          if(nodeInGraph == startNodeID)  
+            console.log("Node key:", nodeInGraph); //works, all nodes are iterated over
+
+         // if(nodeInGraph == "26950035")
+            //console.log("Node key:", nodeInGraph);
+
             // set the distances in dist array. If start node, set to 0, otherwise they're all infinity.
             distances[nodeInGraph] = nodeInGraph === startNodeID ? 0: Infinity;
             
@@ -37,11 +52,27 @@ import { getCityData } from "../constants";
 
             // add current node to IPQ with its initial distance
             this.priorityQueue.add(distances[nodeInGraph], nodeInGraph);
+
+
+
+
+
+            //////////////////////// debug ////////////////////////
+            // Get the element that was just added to the priority queue
+             //const addedElement = this.priorityQueue.values[this.priorityQueue.size() - 1];
+
+
+
+
+
+            // // Print the element
+            // console.log('Element added to priority queue:', addedElement);
         }
 
         // Select node with the smallest known distance
         while (!this.priorityQueue.isEmpty()) {
              const currentNodeID = this.priorityQueue.poll() as string | null;
+             console.log("Node removed from IPQ: "+ currentNodeID);
           
             // stupid typescript null check
             if(currentNodeID != null){
@@ -103,4 +134,15 @@ private reconstructPath(previousPath: { [label: string]: string | null }, endNod
 
 }
 
-export default Dijkstras
+export default async function dijkstras(city: string, start: string, end: string)
+{
+  const nodeData = await getCityData(
+    city,
+    () => {},
+    () => {}
+  );
+    const dObject = new Dijkstras(nodeData)
+
+    return dObject.dijkstras(start, end);
+}
+
