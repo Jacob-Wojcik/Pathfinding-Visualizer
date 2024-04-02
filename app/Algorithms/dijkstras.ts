@@ -1,6 +1,5 @@
 import { dataDict } from "../types.ts";
 import { getCityData } from "../constants";
-import PriorityQueue from "./minIndexDHeap.ts";
 import MinIndexedDHeap from "./minIndexDHeap.ts";
 
 /**
