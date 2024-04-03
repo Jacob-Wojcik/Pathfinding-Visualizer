@@ -38,7 +38,7 @@ export default function Home() {
   const [endNode, setEndNode] = useState<string | null>(null);
 
   // configuration options
-  const [algorithm, setAlgorithm] = useState<string>("djikstras");
+  const [algorithm, setAlgorithm] = useState<string>("dijkstras");
   const [darkMode, setDarkMode] = useState<boolean>(false);
   const [city, setCity] = useState<string>("ann_arbor");
   const [loading, setLoading] = useState<boolean>(true);
