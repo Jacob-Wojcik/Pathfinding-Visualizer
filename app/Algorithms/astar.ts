@@ -14,8 +14,26 @@ class AStar {
   }
 
   heuristic(nodeID: string, endNodeID: string): number {
-    // Placeholder for the actual heuristic function
-    return 0;
+    const node1 = this.graph[nodeID];
+    const node2 = this.graph[endNodeID];
+    const lat1 = node1.lat;
+    const lon1 = node1.lon;
+    const lat2 = node2.lat;
+    const lon2 = node2.lon;
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = this.toRadians(lat2 - lat1);
+    const dLon = this.toRadians(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(this.toRadians(lat1)) * Math.cos(this.toRadians(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+    return distance;
+  }
+  
+  private toRadians(degrees: number): number {
+    return degrees * Math.PI / 180;
   }
 
   aStar(startNodeID: string): string[] | null {
@@ -42,17 +60,15 @@ class AStar {
       if (currentNodeID === this.endNodeID) {
         return this.reconstructPath(previousPath, this.endNodeID);
       }
-
       const currentNode = this.graph[currentNodeID];
       for (const adjacentNode of currentNode.adj) {
         const adjacentNodeID = adjacentNode.nodeId;
-        const adjNodeDistance = adjacentNode.distance;
-        const altDistance = distances[currentNodeID] + adjNodeDistance;
-
-        if (altDistance < distances[adjacentNodeID]) {
-          distances[adjacentNodeID] = altDistance;
+        const adjNodeTime = adjacentNode.time; // Use 'time' instead of 'distance'
+        const altTime = distances[currentNodeID] + adjNodeTime;
+        if (altTime < distances[adjacentNodeID]) {
+          distances[adjacentNodeID] = altTime;
           previousPath[adjacentNodeID] = currentNodeID;
-          fScore[adjacentNodeID] = altDistance + this.heuristic(adjacentNodeID, this.endNodeID);
+          fScore[adjacentNodeID] = altTime + this.heuristic(adjacentNodeID, this.endNodeID);
           this.priorityQueue.updateKey(adjacentNodeID, fScore[adjacentNodeID]);
         }
       }
