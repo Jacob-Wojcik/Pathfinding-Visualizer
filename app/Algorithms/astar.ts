@@ -13,6 +13,8 @@ class AStar {
     this.priorityQueue = new MinIndexedDHeap<string>(d);
   }
 
+  //taxi distance
+
   heuristic(nodeID: string, endNodeID: string): number {
     const node1 = this.graph[nodeID];
     const node2 = this.graph[endNodeID];
@@ -21,16 +23,15 @@ class AStar {
     const lat2 = node2.lat;
     const lon2 = node2.lon;
     const R = 6371; // Earth's radius in kilometers
-    const dLat = this.toRadians(lat2 - lat1);
-    const dLon = this.toRadians(lon2 - lon1);
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(this.toRadians(lat1)) * Math.cos(this.toRadians(lat2)) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c;
+    const dLat = Math.abs(lat2 - lat1);
+    const dLon = Math.abs(lon2 - lon1);
+    const distance = R * (dLat + dLon);
     return distance;
   }
+
+
+
+
   
   private toRadians(degrees: number): number {
     return degrees * Math.PI / 180;
