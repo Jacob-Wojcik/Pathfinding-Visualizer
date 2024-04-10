@@ -1,17 +1,17 @@
 import { getCityData } from "../constants";
+import { dataDict } from "../types";
 
 interface PreviousDict {
   [key: string]: string | undefined;
 }
 
-const dfs = async (city: string, start: string, end: string) => {
-  const nodeData = await getCityData(
-    city,
-    () => {},
-    () => {}
-  );
-
-  console.log('running dfs');
+const dfs = async (
+  city: string,
+  start: string,
+  end: string,
+  nodeData: dataDict
+) => {
+  console.log("running dfs");
   let stack: Array<string> = [];
   let visitedNodes = new Set<string>();
   let previous: PreviousDict = {};
@@ -22,7 +22,7 @@ const dfs = async (city: string, start: string, end: string) => {
   while (stack.length > 0) {
     let node = stack.pop();
     if (!node) return;
-    
+
     // reached the end, reconstruct the path
     if (node === end) {
       while (previous[node]) {

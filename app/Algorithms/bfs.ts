@@ -4,14 +4,14 @@ by using a breadth-first search. Also requires a Map (aka Hash table) with
 all of the nodes on the map provided
 */
 import { getCityData } from "../constants.ts";
+import { dataDict } from "../types.ts";
 
-export default async function bfs(city: string, start: string, end: string) {
-  const nodes = await getCityData(
-    city,
-    () => {},
-    () => {}
-  );
-
+export default async function bfs(
+  city: string,
+  start: string,
+  end: string,
+  nodes: dataDict
+) {
   //Hash table to store which vertices have been visited. Keys are the previous node in the path
   const nodesSeen: Map<string, string> = new Map<string, string>();
 
