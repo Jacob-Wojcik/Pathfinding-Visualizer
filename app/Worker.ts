@@ -5,11 +5,9 @@ import { nodeInfo, pair, LeafletLatLng } from "./types";
 const ctx: Worker = self as any;
 
 ctx.addEventListener("message", async (event) => {
-  console.log("new message!");
+  console.log("worker received a new message!");
   const { city, algorithm, startNode, endNode } = JSON.parse(event.data);
-
   const path = await findPath(city, algorithm, startNode, endNode);
-
   ctx.postMessage(JSON.stringify({ type: "setPath", path: path }));
 });
 
@@ -19,7 +17,6 @@ const findPath = async (
   startNode: string,
   endNode: string
 ) => {
-  console.log(startNode, endNode);
   const nodeData = await getCityData(
     city,
     () => {},
@@ -30,19 +27,16 @@ const findPath = async (
   const pathfindingFunction = pathfindingModule.default;
 
   if (startNode && endNode) {
-    // call the pathfinding function with the provided parameters
-    console.log(
-      `calling ${algorithm} with parameters:`,
+    const computedPath = await pathfindingFunction(
       city,
       startNode,
-      endNode
+      endNode,
+      nodeData
     );
-    const computedPath = await pathfindingFunction(city, startNode, endNode);
-    console.log(computedPath);
 
     if (!computedPath) return;
 
-    // create an array of latlng points to draw final path
+    // create an array of latlng points for the animated polyline to draw the path
     let path: Array<LeafletLatLng> = [];
     for (const nodeId of computedPath) {
       const node: nodeInfo = nodeData[nodeId];
