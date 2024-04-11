@@ -109,13 +109,9 @@ class Dijkstras {
 export default async function dijkstras(
   city: string,
   start: string,
-  end: string
+  end: string,
+  nodeData: dataDict
 ) {
-  const nodeData = await getCityData(
-    city,
-    () => {},
-    () => {}
-  );
   const dObject = new Dijkstras(nodeData, 2);
 
   return dObject.dijkstras(start, end);

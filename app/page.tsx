@@ -12,11 +12,7 @@ import { getCityData } from "./constants";
 import { MoonIcon, SunIcon } from "@primer/octicons-react";
 import { qtNode, dataDict } from "./types";
 import * as d3 from "d3-quadtree";
-import {
-  LatLng,
-  LeafletMouseEvent,
-  Marker as LeafletMarker,
-} from "leaflet";
+import { LatLng, LeafletMouseEvent, Marker as LeafletMarker } from "leaflet";
 import {
   MapContainer,
   Marker,
@@ -32,6 +28,10 @@ export default function Home() {
   const [lat, setLat] = useState<number>(42.279);
   const [long, setLong] = useState<number>(-83.732);
   const [zoom, setZoom] = useState<number>(12);
+
+  const [worker, setWorker] = useState<Worker>(
+    new Worker(new URL("Worker.ts", import.meta.url))
+  );
 
   // start and end markers
   const [startNode, setStartNode] = useState<string | null>(null);
@@ -53,6 +53,9 @@ export default function Home() {
   const [qt, setQt] = useState<d3.Quadtree<qtNode>>(d3.quadtree<qtNode>());
   const [nodeData, setNodeData] = useState<dataDict>({});
 
+  const [path, setPath] = useState<Array<LatLng>>(new Array<LatLng>());
+  const [pathFound, setPathFound] = useState<boolean>(false);
+
   const layerTiles = darkMode
     ? "https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png"
     : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
@@ -66,13 +69,33 @@ export default function Home() {
     // reset the state of the application
     setStartNode(null);
     setEndNode(null);
+    setPath(new Array<LatLng>());
     setStartMarkerPos(null);
     setEndMarkerPos(null);
 
-    getCityData(city, () => {}, () => {}).then((data) => {
+    getCityData(
+      city,
+      () => {},
+      () => {}
+    ).then((data) => {
       setNodeData(data);
     });
   }, [city]);
+
+  useEffect(() => {
+    worker.onmessage = (event: any) => {
+      const data = JSON.parse(event.data);
+      const type = data.type;
+      if (type === "setPath") {
+        const path = data.path;
+        if (path) {
+          console.log(path);
+          setPathFound(true);
+          setPath(path);
+        }
+      }
+    };
+  }, [worker]);
 
   useEffect(() => {
     // when node data changes,build quadtree from nodes
@@ -156,36 +179,31 @@ export default function Home() {
   );
 
   function MapEventHandler() {
-    const map = useMapEvents({
+    useMapEvents({
       click: (e) => handleClick(e),
     });
     return null;
   }
 
   /* 
-  this is function handles executing the pathfinding
+  This is function handles executing the pathfinding
   it dynamically imports the pathfindingModule, accesses the default function
   and calls the pathfinding function with the city, startNode, endnode as parameters
   finally it will log the path for now, later we will work on animating the path found
   */
   const runPathfinding = async () => {
-    // only run pathfinding if start and end is marked
-    if (startNode && endNode) {
-      try {
-        // dynamically import the selected algorithm module
-        console.log(`importing pathfinding module from ./algorithms/${algorithm}`)
-        const pathfindingModule = await import(`./algorithms/${algorithm}`);
-        const pathfindingFunction = pathfindingModule.default;
-        
-        // call the pathfinding function with the provided parameters
-        console.log('calling pathfinding function with parameters:', city, startNode, endNode);
-        const path = await pathfindingFunction(city, startNode, endNode);
-        console.log('Path found:', path);
-      } catch (error) {
-        console.error('Error occurred during pathfinding:', error);
-      }
+    if (startNode !== null && endNode !== null) {
+      console.log(city, algorithm, startNode, endNode);
+      worker.postMessage(
+        JSON.stringify({
+          city: city,
+          algorithm: algorithm,
+          startNode: startNode,
+          endNode: endNode,
+        })
+      );
     }
-  }
+  };
 
   return (
     <div>
@@ -215,7 +233,9 @@ export default function Home() {
               </option>
             ))}
           </Select>
-          <Button onClick={runPathfinding} className="rounded-r-sm">Visualize</Button>
+          <Button onClick={runPathfinding} className="rounded-r-sm">
+            Visualize
+          </Button>
         </Child>
         <Child className="justify-end">
           <IconWrapper onClick={() => setDarkMode(!darkMode)}>

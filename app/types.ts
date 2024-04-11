@@ -32,3 +32,8 @@ export interface cityDict {
     loaded: boolean;
   };
 }
+
+export interface LeafletLatLng {
+  lat: number;
+  lng: number;
+}
