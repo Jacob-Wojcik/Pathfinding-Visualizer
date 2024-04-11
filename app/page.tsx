@@ -24,6 +24,7 @@ import {
 import "leaflet/dist/leaflet.css";
 import { markerA, markerB } from "./Icons";
 import AnimatedPolyline from "./lib/react-leaflet-animated-polyline/AnimatedPolyline";
+import getStatistics from "./algorithms/statistics";
 
 export default function Home() {
   const [lat, setLat] = useState<number>(42.279);
@@ -54,8 +55,13 @@ export default function Home() {
   const [qt, setQt] = useState<d3.Quadtree<qtNode>>(d3.quadtree<qtNode>());
   const [nodeData, setNodeData] = useState<dataDict>({});
 
-  const [path, setPath] = useState<Array<LatLng>>(new Array<LatLng>());
+  const [path, setPath] = useState<Array<string>>(new Array<string>());
+  const [executionTime, setExecutionTime] = useState<number>(-1);
+  const [distance, setDistance] = useState<number>(-1);
+  const [pathCoordinates, setPathCoordinates] = useState<Array<LatLng>>(new Array<LatLng>());
   const [pathFound, setPathFound] = useState<boolean>(false);
+  
+
 
   const layerTiles = darkMode
     ? "https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png"
@@ -70,10 +76,13 @@ export default function Home() {
     // reset the state of the application
     setStartNode(null);
     setEndNode(null);
-    setPath(new Array<LatLng>());
+    setPathCoordinates(new Array<LatLng>());
     setStartMarkerPos(null);
     setEndMarkerPos(null);
     setPathFound(false);
+    setDistance(-1);
+    setExecutionTime(-1);
+    setPath(new Array<string>);
 
     getCityData(
       city,
@@ -90,9 +99,15 @@ export default function Home() {
       const type = data.type;
       if (type === "setPath") {
         const path = data.path;
+        const pathCoordinates = data.pathCoordinates;
+        const executionTime = data.executionTime;
+        const distanceInMiles = data.distanceInMiles;
         if (path) {
           setPathFound(true);
+          setPathCoordinates(pathCoordinates);
           setPath(path);
+          setDistance(distanceInMiles);
+          setExecutionTime(executionTime);
         }
       }
     };
@@ -193,7 +208,7 @@ export default function Home() {
   finally it will log the path for now, later we will work on animating the path found
   */
   const runPathfinding = async () => {
-    if (startNode !== null && endNode !== null) {
+    if (startNode !== null && endNode !== null && startNode != endNode) {
       console.log(city, algorithm, startNode, endNode);
       setPathFound(false);
       worker.postMessage(
@@ -210,18 +225,31 @@ export default function Home() {
   useEffect(() => {
     // on start, end node change, re-run pathfinding
     if (pathFound) {
-      setPath([]);
+      setPathCoordinates([]);
       runPathfinding();
     }
   }, [startNode, endNode]);
 
   // render the final path if it exists
   const animatedPolyline = useMemo(() => {
-    if (pathFound && path.length > 0) {
-      return <AnimatedPolyline positions={path} snakeSpeed={1000} />;
+    if (pathFound && pathCoordinates.length > 0) {
+      return <AnimatedPolyline positions={pathCoordinates} snakeSpeed={500} />;
     }
     return null;
-  }, [pathFound, path]);
+  }, [pathFound, pathCoordinates]);
+
+  const Statistics = () => {
+   
+    
+
+    return (
+    <div> 
+        <p>Number of nodes: {path.length}</p>
+        <p>Miles: {distance}</p>
+        <p>Execution time: {executionTime}</p>
+    </div>)
+  }
+
 
   return (
     <div>
@@ -238,6 +266,7 @@ export default function Home() {
               </option>
             ))}
           </Select>
+          <Statistics />
         </Child>
         <Child className="justify-center">
           <Select

@@ -1,14 +1,41 @@
+import getStatistics from "./algorithms/statistics";
 import { getCityData } from "./constants";
 
 import { nodeInfo, pair, LeafletLatLng } from "./types";
+
+import Timer from "timer-machine";
 
 const ctx: Worker = self as any;
 
 ctx.addEventListener("message", async (event) => {
   console.log("worker received a new message!");
   const { city, algorithm, startNode, endNode } = JSON.parse(event.data);
-  const path = await findPath(city, algorithm, startNode, endNode);
-  ctx.postMessage(JSON.stringify({ type: "setPath", path: path }));
+  const result = await findPath(
+    city,
+    algorithm,
+    startNode,
+    endNode
+  );
+  if(result){
+    const [path, pathCoordinates, executionTime, distanceInMiles] = result;
+    
+    ctx.postMessage(
+      JSON.stringify({
+        type: "setPath",
+        path: path,
+        pathCoordinates: pathCoordinates,
+        executionTime: executionTime,
+        distanceInMiles: distanceInMiles
+      })
+    );
+
+    console.log(path);
+    console.log(pathCoordinates );
+    console.log( executionTime);
+    
+  }
+
+  
 });
 
 const findPath = async (
@@ -27,22 +54,21 @@ const findPath = async (
   const pathfindingFunction = pathfindingModule.default;
 
   if (startNode && endNode) {
-    const computedPath = await pathfindingFunction(
-      city,
-      startNode,
-      endNode,
-      nodeData
-    );
+    const timer = new Timer();
+    timer.start();
+    const path = await pathfindingFunction(city, startNode, endNode, nodeData);
+    timer.stop();
+    const executionTime = timer.time();
 
-    if (!computedPath) return;
-
+   // if (!path) return;
+    const distanceInMiles = getStatistics(nodeData, path);
     // create an array of latlng points for the animated polyline to draw the path
-    let path: Array<LeafletLatLng> = [];
-    for (const nodeId of computedPath) {
+    let pathCoordinates: Array<LeafletLatLng> = [];
+    for (const nodeId of path) {
       const node: nodeInfo = nodeData[nodeId];
-      path.push({ lat: node.lat, lng: node.lon });
+      pathCoordinates.push({ lat: node.lat, lng: node.lon });
     }
-    return path;
+    return [path, pathCoordinates, executionTime, distanceInMiles];
   }
 };
 
