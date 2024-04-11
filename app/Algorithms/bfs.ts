@@ -3,7 +3,6 @@ Takes a starting point on the map, and finds a path to the end location
 by using a breadth-first search. Also requires a Map (aka Hash table) with
 all of the nodes on the map provided
 */
-import { getCityData } from "../constants.ts";
 import { dataDict } from "../types.ts";
 
 export default async function bfs(
