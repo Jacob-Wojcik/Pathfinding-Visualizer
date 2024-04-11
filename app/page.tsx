@@ -24,7 +24,6 @@ import {
 import "leaflet/dist/leaflet.css";
 import { markerA, markerB } from "./Icons";
 import AnimatedPolyline from "./lib/react-leaflet-animated-polyline/AnimatedPolyline";
-import getStatistics from "./algorithms/statistics";
 
 export default function Home() {
   const [lat, setLat] = useState<number>(42.279);
@@ -58,10 +57,10 @@ export default function Home() {
   const [path, setPath] = useState<Array<string>>(new Array<string>());
   const [executionTime, setExecutionTime] = useState<number>(-1);
   const [distance, setDistance] = useState<number>(-1);
-  const [pathCoordinates, setPathCoordinates] = useState<Array<LatLng>>(new Array<LatLng>());
+  const [pathCoordinates, setPathCoordinates] = useState<Array<LatLng>>(
+    new Array<LatLng>()
+  );
   const [pathFound, setPathFound] = useState<boolean>(false);
-  
-
 
   const layerTiles = darkMode
     ? "https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png"
@@ -82,7 +81,7 @@ export default function Home() {
     setPathFound(false);
     setDistance(-1);
     setExecutionTime(-1);
-    setPath(new Array<string>);
+    setPath(new Array<string>());
 
     getCityData(
       city,
@@ -110,6 +109,10 @@ export default function Home() {
           setExecutionTime(executionTime);
         }
       }
+
+      return () => {
+        worker.terminate();
+      };
     };
   }, [worker]);
 
@@ -239,34 +242,52 @@ export default function Home() {
   }, [pathFound, pathCoordinates]);
 
   const Statistics = () => {
-   
-    
+    let executionTimeText;
+    let pathLengthText;
+    let pathDistanceText;
+    if (executionTime >= 0) {
+      if (pathFound) {
+        executionTimeText = `Execution time: ${executionTime / 1000.0} seconds`;
+        pathLengthText =
+          path.length > 0 ? `Path length: ${path.length} nodes` : null;
+        pathDistanceText =
+          distance > 0
+            ? `Path distance: ${distance.toFixed(2)} miles (${(
+                distance * 1.609344
+              ).toFixed(2)} km)`
+            : null;
+      } else {
+        executionTimeText = "Finding the path...";
+      }
+    }
 
     return (
-    <div> 
-        <p>Number of nodes: {path.length}</p>
-        <p>Miles: {distance}</p>
-        <p>Execution time: {executionTime}</p>
-    </div>)
-  }
-
+      <div className="text-xs">
+        <p>{executionTimeText}</p>
+        <p>{pathLengthText}</p>
+        <p>{pathDistanceText}</p>
+      </div>
+    );
+  };
 
   return (
     <div>
       <Settings>
         <Child className="justify-start">
-          <Select
-            onChange={(e) => setAlgorithm(e.target.value)}
-            value={algorithm}
-            className="rounded-sm"
-          >
-            {algos.map((algo) => (
-              <option key={algo.value} value={algo.value}>
-                {algo.label}
-              </option>
-            ))}
-          </Select>
-          <Statistics />
+          <div className="absolute flex flex-col items-center">
+            <Select
+              onChange={(e) => setAlgorithm(e.target.value)}
+              value={algorithm}
+              className="rounded-sm"
+            >
+              {algos.map((algo) => (
+                <option key={algo.value} value={algo.value}>
+                  {algo.label}
+                </option>
+              ))}
+            </Select>
+            <Statistics />
+          </div>
         </Child>
         <Child className="justify-center">
           <Select
