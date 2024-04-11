@@ -1,5 +1,5 @@
 "use client";
-import React, { RefObject, useEffect, useRef, useState } from "react";
+import React, { RefObject, useEffect, useMemo, useRef, useState } from "react";
 import {
   Button,
   Child,
@@ -214,6 +214,13 @@ export default function Home() {
     }
   }, [startNode, endNode]);
 
+  const animatedPolyline = useMemo(() => {
+    if (pathFound && path.length > 0) {
+      return <AnimatedPolyline positions={path} snakeSpeed={1000} />;
+    }
+    return null;
+  }, [pathFound, path]);
+
   return (
     <div>
       <Settings>
@@ -294,10 +301,7 @@ export default function Home() {
           </Marker>
         )}
         <ZoomControl position={"bottomleft"} />
-        {/* Render final path, if exists */}
-        {pathFound && path.length > 0 && (
-          <AnimatedPolyline positions={path} snakeSpeed={1000} />
-        )}
+        {animatedPolyline}
       </MapContainer>
     </div>
   );
