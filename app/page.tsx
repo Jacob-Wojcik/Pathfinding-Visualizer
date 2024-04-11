@@ -23,6 +23,7 @@ import {
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { markerA, markerB } from "./Icons";
+import AnimatedPolyline from "./lib/react-leaflet-animated-polyline/AnimatedPolyline";
 
 export default function Home() {
   const [lat, setLat] = useState<number>(42.279);
@@ -72,6 +73,7 @@ export default function Home() {
     setPath(new Array<LatLng>());
     setStartMarkerPos(null);
     setEndMarkerPos(null);
+    setPathFound(false);
 
     getCityData(
       city,
@@ -89,7 +91,6 @@ export default function Home() {
       if (type === "setPath") {
         const path = data.path;
         if (path) {
-          console.log(path);
           setPathFound(true);
           setPath(path);
         }
@@ -205,6 +206,14 @@ export default function Home() {
     }
   };
 
+  useEffect(() => {
+    // on start, end node change, re-run pathfinding
+    if (pathFound) {
+      setPath([]);
+      runPathfinding();
+    }
+  }, [startNode, endNode]);
+
   return (
     <div>
       <Settings>
@@ -285,6 +294,10 @@ export default function Home() {
           </Marker>
         )}
         <ZoomControl position={"bottomleft"} />
+        {/* Render final path, if exists */}
+        {pathFound && path.length > 0 && (
+          <AnimatedPolyline positions={path} snakeSpeed={1000} />
+        )}
       </MapContainer>
     </div>
   );
