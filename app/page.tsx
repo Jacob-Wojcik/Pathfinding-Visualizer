@@ -1,5 +1,5 @@
 "use client";
-import React, { RefObject, useEffect, useRef, useState } from "react";
+import React, { RefObject, useEffect, useMemo, useRef, useState } from "react";
 import {
   Button,
   Child,
@@ -195,6 +195,7 @@ export default function Home() {
   const runPathfinding = async () => {
     if (startNode !== null && endNode !== null) {
       console.log(city, algorithm, startNode, endNode);
+      setPathFound(false);
       worker.postMessage(
         JSON.stringify({
           city: city,
@@ -213,6 +214,14 @@ export default function Home() {
       runPathfinding();
     }
   }, [startNode, endNode]);
+
+  // render the final path if it exists
+  const animatedPolyline = useMemo(() => {
+    if (pathFound && path.length > 0) {
+      return <AnimatedPolyline positions={path} snakeSpeed={1000} />;
+    }
+    return null;
+  }, [pathFound, path]);
 
   return (
     <div>
@@ -294,10 +303,7 @@ export default function Home() {
           </Marker>
         )}
         <ZoomControl position={"bottomleft"} />
-        {/* Render final path, if exists */}
-        {pathFound && path.length > 0 && (
-          <AnimatedPolyline positions={path} snakeSpeed={1000} />
-        )}
+        {animatedPolyline}
       </MapContainer>
     </div>
   );
