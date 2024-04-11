@@ -22,25 +22,28 @@ export const cityData: cityDict = {
   ann_arbor: {
     data: {},
     file: "annarbor.json",
-    loaded: false
-  }
-}
+    loaded: false,
+  },
+};
 
 export async function getCityData(
   city: string,
   setLoading: (isLoading: boolean) => void,
   onProgress: (progress: number) => void
 ) {
+  console.log("getting data");
   if (cityData[city].loaded) {
+    console.log("data already loaded");
     return cityData[city].data;
   } else {
     const file = cityData[city].file;
     setLoading(true);
-    const { data: jsonData } = await axios.get(`./data/${file}`, {
+    const { data: jsonData } = await axios.get(`/data/${file}`, {
       onDownloadProgress: (progressEvent) => {
         if (progressEvent.total) {
           const percentage = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total);
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
           onProgress(percentage);
         }
       },
@@ -51,6 +54,7 @@ export async function getCityData(
       setLoading(false);
       cityData[city].loaded = true;
     }, 200);
+    console.log("returning data");
     return cityData[city].data;
   }
 }
