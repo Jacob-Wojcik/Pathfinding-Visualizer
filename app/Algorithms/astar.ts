@@ -29,12 +29,8 @@ class AStar {
     return distance;
   }
 
-
-
-
-  
   private toRadians(degrees: number): number {
-    return degrees * Math.PI / 180;
+    return (degrees * Math.PI) / 180;
   }
 
   aStar(startNodeID: string): string[] | null {
@@ -49,7 +45,8 @@ class AStar {
 
     for (const nodeInGraph in this.graph) {
       distances[nodeInGraph] = nodeInGraph === startNodeID ? 0 : Infinity;
-      fScore[nodeInGraph] = distances[nodeInGraph] + this.heuristic(nodeInGraph, this.endNodeID);
+      fScore[nodeInGraph] =
+        distances[nodeInGraph] + this.heuristic(nodeInGraph, this.endNodeID);
       this.priorityQueue.enqueue(fScore[nodeInGraph], nodeInGraph);
       previousPath[nodeInGraph] = null;
     }
@@ -69,7 +66,8 @@ class AStar {
         if (altTime < distances[adjacentNodeID]) {
           distances[adjacentNodeID] = altTime;
           previousPath[adjacentNodeID] = currentNodeID;
-          fScore[adjacentNodeID] = altTime + this.heuristic(adjacentNodeID, this.endNodeID);
+          fScore[adjacentNodeID] =
+            altTime + this.heuristic(adjacentNodeID, this.endNodeID);
           this.priorityQueue.updateKey(adjacentNodeID, fScore[adjacentNodeID]);
         }
       }
@@ -77,13 +75,19 @@ class AStar {
     return null;
   }
 
-  private reconstructPath(previousPath: { [label: string]: string | null }, endNodeID: string) {
+  private reconstructPath(
+    previousPath: { [label: string]: string | null },
+    endNodeID: string
+  ) {
     let path: string[] = [];
     let currentNodeID: string | null = endNodeID;
 
     while (currentNodeID !== null) {
       path.unshift(currentNodeID);
-      currentNodeID = previousPath[currentNodeID] !== null ? previousPath[currentNodeID]! : null;
+      currentNodeID =
+        previousPath[currentNodeID] !== null
+          ? previousPath[currentNodeID]!
+          : null;
     }
 
     return path;
@@ -91,7 +95,11 @@ class AStar {
 }
 
 export default async function aStar(city: string, start: string, end: string) {
-  const nodeData = await getCityData(city, () => {}, () => {});
+  const nodeData = await getCityData(
+    city,
+    () => {},
+    () => {}
+  );
   const aStarObject = new AStar(nodeData, end, 2);
 
   return aStarObject.aStar(start);
