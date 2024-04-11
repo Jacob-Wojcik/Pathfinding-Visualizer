@@ -195,6 +195,7 @@ export default function Home() {
   const runPathfinding = async () => {
     if (startNode !== null && endNode !== null) {
       console.log(city, algorithm, startNode, endNode);
+      setPathFound(false);
       worker.postMessage(
         JSON.stringify({
           city: city,
@@ -214,6 +215,7 @@ export default function Home() {
     }
   }, [startNode, endNode]);
 
+  // render the final path if it exists
   const animatedPolyline = useMemo(() => {
     if (pathFound && path.length > 0) {
       return <AnimatedPolyline positions={path} snakeSpeed={1000} />;
