@@ -94,12 +94,12 @@ class AStar {
   }
 }
 
-export default async function aStar(city: string, start: string, end: string) {
-  const nodeData = await getCityData(
-    city,
-    () => {},
-    () => {}
-  );
+export default async function aStar(
+  city: string,
+  start: string,
+  end: string,
+  nodeData: dataDict
+) {
   const aStarObject = new AStar(nodeData, end, 2);
 
   return aStarObject.aStar(start);
