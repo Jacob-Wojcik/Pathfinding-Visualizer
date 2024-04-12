@@ -57,6 +57,7 @@ export default function Home() {
   const [path, setPath] = useState<Array<string>>(new Array<string>());
   const [executionTime, setExecutionTime] = useState<number>(-1);
   const [distance, setDistance] = useState<number>(-1);
+  const [travelTime, setTravelTime] = useState<number>(-1);
   const [pathCoordinates, setPathCoordinates] = useState<Array<LatLng>>(
     new Array<LatLng>()
   );
@@ -80,6 +81,7 @@ export default function Home() {
     setEndMarkerPos(null);
     setPathFound(false);
     setDistance(-1);
+    setTravelTime(-1);
     setExecutionTime(-1);
     setPath(new Array<string>());
 
@@ -97,16 +99,21 @@ export default function Home() {
       const data = JSON.parse(event.data);
       const type = data.type;
       if (type === "setPath") {
-        const path = data.path;
-        const pathCoordinates = data.pathCoordinates;
-        const executionTime = data.executionTime;
-        const distanceInMiles = data.distanceInMiles;
+        const [
+          path,
+          pathCoordinates,
+          executionTime,
+          distanceInMiles,
+          travelTime,
+        ] = data.result;
         if (path) {
-          setPathFound(true);
-          setPathCoordinates(pathCoordinates);
+          console.log(travelTime);
           setPath(path);
           setDistance(distanceInMiles);
           setExecutionTime(executionTime);
+          setPathCoordinates(pathCoordinates);
+          setTravelTime(travelTime);
+          setPathFound(true);
         }
       }
 
@@ -245,6 +252,7 @@ export default function Home() {
     let executionTimeText;
     let pathLengthText;
     let pathDistanceText;
+    let travelTimeText;
     if (executionTime >= 0) {
       if (pathFound) {
         executionTimeText = `Execution time: ${executionTime / 1000.0} seconds`;
@@ -256,8 +264,16 @@ export default function Home() {
                 distance * 1.609344
               ).toFixed(2)} km)`
             : null;
-      } else {
-        executionTimeText = "Finding the path...";
+        if (travelTime > 0) {
+          const hours = Math.floor(travelTime / 1);
+          const minutes = Math.floor((travelTime * 60) % 60);
+          travelTimeText =
+            hours > 0
+              ? `Travel time: ${hours} hr ${minutes} minutes`
+              : `Travel time: ${(travelTime * 60).toFixed(2)} minutes`;
+        } else {
+          executionTimeText = "Finding the path...";
+        }
       }
     }
 
@@ -266,6 +282,7 @@ export default function Home() {
         <p>{executionTimeText}</p>
         <p>{pathLengthText}</p>
         <p>{pathDistanceText}</p>
+        <p>{travelTimeText}</p>
       </div>
     );
   };
