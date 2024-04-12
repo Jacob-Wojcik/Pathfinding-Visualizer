@@ -1,8 +1,8 @@
-import { getCityData } from "../constants.ts";
 import { dataDict } from "../types.ts";
 
 export default function getStatistics(nodes: dataDict, path: Array<string>) {
   let distanceOfPath = 0.0;
+  let travelTime = 0.0;
 
   //find length of path in miles
 
@@ -20,9 +20,10 @@ export default function getStatistics(nodes: dataDict, path: Array<string>) {
       //if the node is the next node in the path
       if (nodes[adjNode.nodeId] === nextNode) {
         distanceOfPath += adjNode.distance;
+        travelTime += adjNode.time;
       }
     }
   }
 
-  return distanceOfPath;
+  return [distanceOfPath, travelTime];
 }

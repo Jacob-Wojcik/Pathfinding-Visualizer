@@ -10,32 +10,15 @@ const ctx: Worker = self as any;
 ctx.addEventListener("message", async (event) => {
   console.log("worker received a new message!");
   const { city, algorithm, startNode, endNode } = JSON.parse(event.data);
-  const result = await findPath(
-    city,
-    algorithm,
-    startNode,
-    endNode
-  );
-  if(result){
-    const [path, pathCoordinates, executionTime, distanceInMiles] = result;
-    
+  const result = await findPath(city, algorithm, startNode, endNode);
+  if (result) {
     ctx.postMessage(
       JSON.stringify({
         type: "setPath",
-        path: path,
-        pathCoordinates: pathCoordinates,
-        executionTime: executionTime,
-        distanceInMiles: distanceInMiles
+        result: result,
       })
     );
-
-    console.log(path);
-    console.log(pathCoordinates );
-    console.log( executionTime);
-    
   }
-
-  
 });
 
 const findPath = async (
@@ -60,15 +43,15 @@ const findPath = async (
     timer.stop();
     const executionTime = timer.time();
 
-   // if (!path) return;
-    const distanceInMiles = getStatistics(nodeData, path);
+    // if (!path) return;
+    const [distanceInMiles, travelTime] = getStatistics(nodeData, path);
     // create an array of latlng points for the animated polyline to draw the path
     let pathCoordinates: Array<LeafletLatLng> = [];
     for (const nodeId of path) {
       const node: nodeInfo = nodeData[nodeId];
       pathCoordinates.push({ lat: node.lat, lng: node.lon });
     }
-    return [path, pathCoordinates, executionTime, distanceInMiles];
+    return [path, pathCoordinates, executionTime, distanceInMiles, travelTime];
   }
 };
 
