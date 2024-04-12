@@ -1,5 +1,4 @@
 import { dataDict } from "../types.ts";
-import { getCityData } from "../constants";
 import MinIndexedDHeap from "./minIndexDHeap.ts";
 
 /**
@@ -31,18 +30,14 @@ class Dijkstras {
     const previousPath: { [nodeId: string]: string | null } = {}; // array that holds the nodes of the shortest distance path
 
     for (const nodeInGraph in this.graph) {
-      // 'for...in loop' that iterates over all nodes in the graph
-      if (nodeInGraph == startNodeID) console.log("Node key:", nodeInGraph); //works, all nodes are iterated over
-
       // set the distances in dist array. If start node, set to 0, otherwise they're all infinity.
       distances[nodeInGraph] = nodeInGraph === startNodeID ? 0 : Infinity;
-
-      // add current node to IPQ with its initial distance
-      this.priorityQueue.enqueue(distances[nodeInGraph], nodeInGraph);
-
       // initialize previous path to null
       previousPath[nodeInGraph] = null;
     }
+
+    // enqueue the start node with distance 0
+    this.priorityQueue.enqueue(0, startNodeID);
 
     // Select node with the smallest known distance
     while (!this.priorityQueue.isEmpty()) {
@@ -70,8 +65,12 @@ class Dijkstras {
           distances[adjacentNodeID] = altDistance; // update the distance to the adjacent node with the new shorter distance
           previousPath[adjacentNodeID] = currentNodeID; // update the previous path to the adjacent node with the current nodeID
 
-          // decrease the key (distance) of the adjacent node with altDistance (the new shorter distance)
-          this.priorityQueue.updateKey(adjacentNodeID, altDistance);
+          // Add or update adjacent node in the priority queue
+          if (this.priorityQueue.contains(adjacentNodeID)) {
+            this.priorityQueue.updateKey(adjacentNodeID, altDistance);
+          } else {
+            this.priorityQueue.enqueue(altDistance, adjacentNodeID);
+          }
         }
       }
     }

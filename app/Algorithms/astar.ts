@@ -1,5 +1,4 @@
 import { dataDict } from "../types.ts";
-import { getCityData } from "../constants";
 import MinIndexedDHeap from "./minIndexDHeap.ts";
 
 class AStar {
@@ -45,11 +44,10 @@ class AStar {
 
     for (const nodeInGraph in this.graph) {
       distances[nodeInGraph] = nodeInGraph === startNodeID ? 0 : Infinity;
-      fScore[nodeInGraph] =
-        distances[nodeInGraph] + this.heuristic(nodeInGraph, this.endNodeID);
-      this.priorityQueue.enqueue(fScore[nodeInGraph], nodeInGraph);
       previousPath[nodeInGraph] = null;
     }
+
+    this.priorityQueue.enqueue(0, startNodeID);
 
     while (!this.priorityQueue.isEmpty()) {
       const dequeued = this.priorityQueue.dequeue();
@@ -68,7 +66,14 @@ class AStar {
           previousPath[adjacentNodeID] = currentNodeID;
           fScore[adjacentNodeID] =
             altTime + this.heuristic(adjacentNodeID, this.endNodeID);
-          this.priorityQueue.updateKey(adjacentNodeID, fScore[adjacentNodeID]);
+          if (this.priorityQueue.contains(currentNodeID)) {
+            this.priorityQueue.updateKey(
+              adjacentNodeID,
+              fScore[adjacentNodeID]
+            );
+          } else {
+            this.priorityQueue.enqueue(fScore[adjacentNodeID], adjacentNodeID);
+          }
         }
       }
     }
