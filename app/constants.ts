@@ -2,8 +2,8 @@ import axios from "axios";
 import { cityDict, pair } from "./types";
 
 export const cities: Array<pair> = [
-  { value: "ann_arbor", label: "Ann Arbor, MI" },
-  { value: "detroit", label: "Detroit, MI" },
+  { value: "ann_arbor", label: "Ann Arbor, MI (33152 nodes, 16.1 MB)" },
+  { value: "detroit", label: "Detroit, MI (141282 nodes, 29.l8 MB)" },
 ];
 
 export const cityCenters: Record<string, { lat: number; long: number }> = {
@@ -12,8 +12,8 @@ export const cityCenters: Record<string, { lat: number; long: number }> = {
 };
 
 export const algos: Array<pair> = [
-  { value: "dijkstras", label: "Dijkstra's" },
-  { value: "astar-manhanttan", label: "A* (Travel Time, Manhattan)" },
+  { value: "dijkstras", label: "Dijkstra's (Shortest Distance)" },
+  { value: "astar-manhattan", label: "A* (Travel Time, Manhattan)" },
   { value: "astar-euclidean", label: "A* (Travel Time, Euclidean)" },
   { value: "bfs", label: "Breadth First Search" },
   { value: "dfs", label: "Depth First Search" },
@@ -22,7 +22,12 @@ export const algos: Array<pair> = [
 export const cityData: cityDict = {
   ann_arbor: {
     data: {},
-    file: "annarbor.json",
+    file: "data.json",
+    loaded: false,
+  },
+  detroit: {
+    data: {},
+    file: "detroit.json",
     loaded: false,
   },
 };

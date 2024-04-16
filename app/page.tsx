@@ -19,6 +19,7 @@ import {
   Popup,
   TileLayer,
   ZoomControl,
+  useMap,
   useMapEvents,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -211,6 +212,16 @@ export default function Home() {
     return null;
   }
 
+  function SetCenter({ coords }) {
+    const map = useMap();
+    map.setView(coords, map.getZoom());
+    return null;
+  }
+
+  const SetCenterMemoized = useMemo(() => {
+    return <SetCenter coords={[lat, long]} />;
+  }, [lat, long]);
+
   /* 
   This is function handles executing the pathfinding
   it dynamically imports the pathfindingModule, accesses the default function
@@ -253,6 +264,8 @@ export default function Home() {
     let pathLengthText;
     let pathDistanceText;
     let travelTimeText;
+
+    const textColorClass = darkMode ? "text-white" : "text-black";
     if (executionTime >= 0) {
       if (pathFound) {
         executionTimeText = `Execution time: ${executionTime / 1000.0} seconds`;
@@ -278,7 +291,7 @@ export default function Home() {
     }
 
     return (
-      <div className="text-xs">
+      <div className={`text-lg ${textColorClass}`}>
         <p>{executionTimeText}</p>
         <p>{pathLengthText}</p>
         <p>{pathDistanceText}</p>
@@ -338,6 +351,7 @@ export default function Home() {
         zoom={zoom}
         zoomControl={false}
       >
+        {SetCenterMemoized}
         <MapEventHandler />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
