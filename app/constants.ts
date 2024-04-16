@@ -13,6 +13,7 @@ export const cityCenters: Record<string, { lat: number; long: number }> = {
 
 export const algos: Array<pair> = [
   { value: "dijkstras", label: "Dijkstra's (Shortest Distance)" },
+  { value: "dijkstras-time", label: "Dijkstra's (Shortest Travel Time)" },
   { value: "astar-manhattan", label: "A* (Travel Time, Manhattan)" },
   { value: "astar-euclidean", label: "A* (Travel Time, Euclidean)" },
   { value: "bfs", label: "Breadth First Search" },
