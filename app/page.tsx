@@ -54,7 +54,13 @@ export default function Home() {
   const [qt, setQt] = useState<d3.Quadtree<qtNode>>(d3.quadtree<qtNode>());
   const [nodeData, setNodeData] = useState<dataDict>({});
 
-  const [path, setPath] = useState<Array<LatLng>>(new Array<LatLng>());
+  const [path, setPath] = useState<Array<string>>(new Array<string>());
+  const [executionTime, setExecutionTime] = useState<number>(-1);
+  const [distance, setDistance] = useState<number>(-1);
+  const [travelTime, setTravelTime] = useState<number>(-1);
+  const [pathCoordinates, setPathCoordinates] = useState<Array<LatLng>>(
+    new Array<LatLng>()
+  );
   const [pathFound, setPathFound] = useState<boolean>(false);
 
   const layerTiles = darkMode
@@ -70,10 +76,14 @@ export default function Home() {
     // reset the state of the application
     setStartNode(null);
     setEndNode(null);
-    setPath(new Array<LatLng>());
+    setPathCoordinates(new Array<LatLng>());
     setStartMarkerPos(null);
     setEndMarkerPos(null);
     setPathFound(false);
+    setDistance(-1);
+    setTravelTime(-1);
+    setExecutionTime(-1);
+    setPath(new Array<string>());
 
     getCityData(
       city,
@@ -89,12 +99,27 @@ export default function Home() {
       const data = JSON.parse(event.data);
       const type = data.type;
       if (type === "setPath") {
-        const path = data.path;
+        const [
+          path,
+          pathCoordinates,
+          executionTime,
+          distanceInMiles,
+          travelTime,
+        ] = data.result;
         if (path) {
-          setPathFound(true);
+          console.log(travelTime);
           setPath(path);
+          setDistance(distanceInMiles);
+          setExecutionTime(executionTime);
+          setPathCoordinates(pathCoordinates);
+          setTravelTime(travelTime);
+          setPathFound(true);
         }
       }
+
+      return () => {
+        worker.terminate();
+      };
     };
   }, [worker]);
 
@@ -193,7 +218,7 @@ export default function Home() {
   finally it will log the path for now, later we will work on animating the path found
   */
   const runPathfinding = async () => {
-    if (startNode !== null && endNode !== null) {
+    if (startNode !== null && endNode !== null && startNode != endNode) {
       console.log(city, algorithm, startNode, endNode);
       setPathFound(false);
       worker.postMessage(
@@ -210,34 +235,76 @@ export default function Home() {
   useEffect(() => {
     // on start, end node change, re-run pathfinding
     if (pathFound) {
-      setPath([]);
+      setPathCoordinates([]);
       runPathfinding();
     }
   }, [startNode, endNode]);
 
   // render the final path if it exists
   const animatedPolyline = useMemo(() => {
-    if (pathFound && path.length > 0) {
-      return <AnimatedPolyline positions={path} snakeSpeed={1000} />;
+    if (pathFound && pathCoordinates.length > 0) {
+      return <AnimatedPolyline positions={pathCoordinates} snakeSpeed={500} />;
     }
     return null;
-  }, [pathFound, path]);
+  }, [pathFound, pathCoordinates]);
+
+  const Statistics = () => {
+    let executionTimeText;
+    let pathLengthText;
+    let pathDistanceText;
+    let travelTimeText;
+    if (executionTime >= 0) {
+      if (pathFound) {
+        executionTimeText = `Execution time: ${executionTime / 1000.0} seconds`;
+        pathLengthText =
+          path.length > 0 ? `Path length: ${path.length} nodes` : null;
+        pathDistanceText =
+          distance > 0
+            ? `Path distance: ${distance.toFixed(2)} miles (${(
+                distance * 1.609344
+              ).toFixed(2)} km)`
+            : null;
+        if (travelTime > 0) {
+          const hours = Math.floor(travelTime / 1);
+          const minutes = Math.floor((travelTime * 60) % 60);
+          travelTimeText =
+            hours > 0
+              ? `Travel time: ${hours} hr ${minutes} minutes`
+              : `Travel time: ${(travelTime * 60).toFixed(2)} minutes`;
+        } else {
+          executionTimeText = "Finding the path...";
+        }
+      }
+    }
+
+    return (
+      <div className="text-xs">
+        <p>{executionTimeText}</p>
+        <p>{pathLengthText}</p>
+        <p>{pathDistanceText}</p>
+        <p>{travelTimeText}</p>
+      </div>
+    );
+  };
 
   return (
     <div>
       <Settings>
         <Child className="justify-start">
-          <Select
-            onChange={(e) => setAlgorithm(e.target.value)}
-            value={algorithm}
-            className="rounded-sm"
-          >
-            {algos.map((algo) => (
-              <option key={algo.value} value={algo.value}>
-                {algo.label}
-              </option>
-            ))}
-          </Select>
+          <div className="absolute flex flex-col items-center">
+            <Select
+              onChange={(e) => setAlgorithm(e.target.value)}
+              value={algorithm}
+              className="rounded-sm"
+            >
+              {algos.map((algo) => (
+                <option key={algo.value} value={algo.value}>
+                  {algo.label}
+                </option>
+              ))}
+            </Select>
+            <Statistics />
+          </div>
         </Child>
         <Child className="justify-center">
           <Select
