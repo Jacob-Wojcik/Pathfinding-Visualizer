@@ -4,6 +4,7 @@ from collections import deque
 import osmium
 from haversine import haversine, Unit
 import json
+import time
 
 """
     Function to read an OSM file and extract adjacency list data.
@@ -188,15 +189,26 @@ if __name__ == '__main__':
         print("Usage: map_parser <osm_file>")
         sys.exit(1)
 
+
     output_file = input('Enter the output file name (should be a .json): ')
     print('Running...')
     file_name = sys.argv[1]
-    graph = read_osm(file_name)
-    largest_component = extract_largest_connected_graph(graph)
-    with open(f'../public/data/{output_file}', 'w') as outfile:
-        json.dump(largest_component, outfile)
-        print(f'Generating {output_file}')
-        file_size = os.path.getsize(f'../public/data/{output_file}')
-        file_size_mb = file_size / (1024 * 1024)
-        print(f'Size of the generated JSON file: {file_size_mb:.2f} MB')
-    print(f'Processing complete.')
+    
+    num_runs = 10
+    total_time = 0
+
+    for i in range(10):
+        start_time = time.perf_counter()
+        graph = read_osm(file_name)
+        largest_component = extract_largest_connected_graph(graph)
+        with open(f'../public/data/{output_file}', 'w') as outfile:
+            json.dump(largest_component, outfile)
+            print(f'Generating {output_file}')
+            file_size = os.path.getsize(f'../public/data/{output_file}')
+            file_size_mb = file_size / (1024 * 1024)
+            print(f'Size of the generated JSON file: {file_size_mb:.2f} MB')
+        end_time = time.perf_counter()
+        total_time += end_time - start_time
+        print(f'Processing complete.')
+        print(f"The execution took {end_time - start_time:0.4f}")
+    print(f'average time of execution is {total_time / num_runs:0.4f}')
